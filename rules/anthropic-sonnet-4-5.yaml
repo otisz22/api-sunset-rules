@@ -1,0 +1,16 @@
+id: anthropic-sonnet-4-5
+provider: Anthropic Claude API
+deprecated: claude-sonnet-4-5-20250929
+deadline: "2026-11-30"
+deadline_source: https://platform.claude.com/docs/en/about-claude/model-deprecations
+replacement: claude-sonnet-5-5
+migration_guide: https://platform.claude.com/docs/en/about-claude/model-deprecations
+status: "rule only (patch generator not implemented: model swap changes behaviour and cost)"
+patterns:
+  - id: model-literal
+    kind: explicit
+    files: ['*']
+    regex: 'claude-sonnet-4-5-20250929'
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build)/'
+  - '\.(md|rst|html|txt)$'

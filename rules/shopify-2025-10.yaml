@@ -1,0 +1,21 @@
+id: shopify-admin-2025-10
+provider: Shopify Admin API
+deprecated: API version 2025-10
+deadline: "2026-10-16T15:00:00Z"
+deadline_source: https://shopify.dev/docs/api/usage/versioning
+replacement: 2026-07 or 2026-10 (latest stable)
+migration_guide: https://shopify.dev/docs/api/release-notes
+note: "Not a hard failure. Shopify falls forward to the oldest accessible stable version, so the risk is silent behaviour change."
+status: "rule only"
+patterns:
+  - id: rest-path
+    kind: explicit
+    files: ['*']
+    regex: 'admin/api/2025-10/'
+  - id: api-version-const
+    kind: explicit
+    files: ['*.js', '*.ts', '*.rb', '*.py', '*.php', '*.toml', '*.json', '*.env']
+    regex: '(?i)api_?version\W{1,6}2025-10\b|ApiVersion\.October25'
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build)/'
+  - '\.(md|rst|html|txt)$'

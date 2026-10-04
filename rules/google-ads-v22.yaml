@@ -1,0 +1,116 @@
+id: google-ads-v22
+provider: Google Ads API
+deprecated: Google Ads API v22 (all methods, all client libraries, REST and gRPC)
+deadline: "2026-10-07"
+deadline_source: https://ads-developers.googleblog.com/2026/09/google-ads-api-v22-sunset-reminder.html
+schedule_source: https://developers.google.com/google-ads/api/docs/sunset-dates
+target_version: v25          # sunsets August 2027 (longest runway among released majors)
+replacement: Google Ads API v25 (or v24 / v23; v23 itself sunsets February 2027)
+migration_guide: https://developers.google.com/google-ads/api/docs/upgrade
+release_notes: https://developers.google.com/google-ads/api/docs/release-notes
+
+# GitHub legacy code search queries used by the finder (no regex support there).
+# Regexes used by the verifier on the cloned source tree.
+patterns:
+  - id: py-import
+    kind: explicit
+    files: ['*.py', '*.ipynb']
+    regex: 'google\.ads\.googleads\.v22\b'
+  - id: version-kwarg
+    kind: explicit
+    files: ['*.py', '*.ipynb', '*.yaml', '*.yml', '*.toml', '*.json', '*.env', '*.cfg', '*.ini']
+    regex: '(?i)\b(?:api_)?version[''"]?\s*[=:]\s*[''"]v22[''"]'
+  - id: version-default
+    kind: explicit
+    files: ['*.py', '*.js', '*.ts', '*.mjs', '*.cjs', '*.rb', '*.php', '*.go', '*.env', '*.yaml', '*.yml', '*.toml']
+    regex: '(?i)(?:ads|google)\w*_?(?:api_)?version\W{1,40}[''"]v22[''"]|GOOGLE_ADS_API_VERSION\s*[=:]\s*[''"]?v22\b'
+  - id: py-version-const
+    kind: explicit
+    files: ['*.py']
+    regex: '(?i)(?:ADS|API|GOOGLE_ADS)\w*VERSION\s*=\s*[''"]v22[''"]'
+  - id: rest-url
+    kind: explicit
+    files: ['*']
+    regex: 'googleads\.googleapis\.com/v22\b'
+  - id: rest-path
+    kind: explicit
+    files: ['*.js', '*.ts', '*.mjs', '*.cjs', '*.go', '*.rb', '*.php', '*.py', '*.gs', '*.java', '*.cs', '*.kt', '*.rs', '*.sh']
+    regex: '[''"`/]v22/customers/'
+  - id: php-ns
+    kind: explicit
+    files: ['*.php']
+    regex: 'Google\\{1,2}Ads\\{1,2}GoogleAds\\{1,2}V22\b'
+  - id: java-pkg
+    kind: explicit
+    files: ['*.java', '*.kt', '*.scala']
+    regex: 'com\.google\.ads\.googleads\.v22\b'
+  - id: ruby-ns
+    kind: explicit
+    files: ['*.rb']
+    regex: 'Google::Ads::GoogleAds::V22\b|\.v22\.'
+  - id: dotnet-ns
+    kind: explicit
+    files: ['*.cs', '*.fs', '*.vb']
+    regex: 'Google\.Ads\.GoogleAds\.V22\b'
+  # Implicit: library pinned to a release whose DEFAULT API version is v22.
+  - id: py-lib-pin-28
+    kind: implicit
+    files: ['requirements*.txt', '*.in', 'pyproject.toml', 'setup.py', 'setup.cfg', 'Pipfile', 'poetry.lock', 'uv.lock']
+    regex: '(?i)\bgoogle-ads\s*(?:==|~=|=)\s*["'']?28\.[1-4]\.\d+'
+  - id: node-opteo-22
+    kind: implicit
+    files: ['package.json']
+    regex: '"google-ads-api"\s*:\s*"[\^~]?22\.\d+\.\d+'
+
+# Paths whose hits are never counted (vendored libs, generated protos, docs).
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|env|dist|build|\.git)/'
+  - '(^|/)google/ads/googleads/v22/'     # a copy of the library's generated code
+  - '(^|/)com/google/ads/googleads/v22/'
+  - '(^|/)(docs?|documentation)/'
+  - '\.(md|rst|html|txt)$'               # requirements*.txt is re-allowed by the pin rule
+
+# Code identifiers removed or changed between v22 and v25. A hit here means the
+# version bump alone is NOT enough and a human must review that file.
+breaking_tokens:
+  v23:
+    - {token: 'call_ad\b|CallAdInfo|CallAd\b', note: 'Call ads removed (v23)'}
+    - {token: 'campaign\.(start|end)_date\b(?!_time)|\.(start|end)_date\s*=', note: 'Campaign.start_date/end_date replaced by start_date_time/end_date_time (v23)'}
+    - {token: 'lead_form_only', note: 'DemandGenMultiAssetAdInfo.lead_form_only removed (v23)'}
+    - {token: 'performance_label', note: 'Aggregate asset performance label metrics removed (v23)'}
+  v24:
+    - {token: 'video_brand_safety_suitability', note: 'Campaign-level brand safety suitability removed, use Customer (v24)'}
+    - {token: 'LOYALTY_SIGN_UPS', note: 'UserListCustomerTypeCategory LOYALTY_SIGN_UPS removed (v24)'}
+    - {token: 'geo_modifiers|biddable_keywords|keyword_plan_network|BiddableKeyword|CriterionBidModifier', note: 'Keyword forecast request fields removed/renamed (v24)'}
+    - {token: 'GenerateKeywordForecastMetrics|generate_keyword_forecast_metrics', note: 'Keyword forecast API changed (v24), review request/response fields'}
+    - {token: 'youtube_select_lineups|is_brand_connect_creator', note: 'Planning fields removed (v24)'}
+    - {token: 'segments\.click_type', note: 'click_type segment removed from asset views (v24); still valid elsewhere, check FROM clause'}
+    - {token: 'segments\.ad_sub_network_type', note: 'ad_sub_network_type segment removed from campaign_budget (v24)'}
+    - {token: 'GenerateShareablePreviews|generate_shareable_previews', note: 'No partial failure anymore (v24)'}
+  v25:
+    - {token: 'LifecycleGoal|lifecycle_goal', note: 'Customer/CampaignLifecycleGoal resources and services removed (v25)'}
+    - {token: 'CustomerAcquisitionGoalSettings|CustomerAcquisitionOptimizationMode', note: 'Legacy acquisition goal settings removed (v25)'}
+    - {token: 'additional_value|additional_high_lifetime_value', note: 'Moved into oneofs (v25)'}
+    - {token: 'IncentiveService|FetchIncentive|ApplyIncentive', note: 'Incentive type fields renamed / required fields (v25)'}
+    - {token: 'contact_details\.email', note: 'LocalServicesLead.contact_details.email removed (v25)'}
+    - {token: 'plannable_location_id\b|cookie_frequency_cap\b', note: 'Reach forecast fields removed (v25)'}
+    - {token: 'search_brand', note: 'GenerateCreatorInsights search_brand removed (v25)'}
+    - {token: 'customer_metrics', note: 'Benchmarks customer_metrics type change (v25)'}
+
+# How the patch generator rewrites things (target v25).
+rewrites:
+  version_strings:
+    - {from: 'google\.ads\.googleads\.v22\b', to: 'google.ads.googleads.v25'}
+    - {from: '(?i)(\b(?:api_)?version[''"]?\s*[=:]\s*[''"])v22([''"])', to: '\1v25\2'}
+    - {from: '(?i)((?:ads|google)\w*_?(?:api_)?version\W{1,40}[''"])v22([''"])', to: '\1v25\2'}
+    - {from: '(GOOGLE_ADS_API_VERSION\s*[=:]\s*[''"]?)v22\b', to: '\1v25'}
+    - {from: '(?i)((?:ADS|API|GOOGLE_ADS)\w*VERSION\s*=\s*[''"])v22([''"])', to: '\1v25\2'}
+    - {from: 'googleads\.googleapis\.com/v22\b', to: 'googleads.googleapis.com/v25'}
+    - {from: '([''"`/])v22/customers/', to: '\1v25/customers/'}
+    - {from: '(Google\\{1,2}Ads\\{1,2}GoogleAds\\{1,2})V22\b', to: '\1V25'}
+    - {from: 'com\.google\.ads\.googleads\.v22\b', to: 'com.google.ads.googleads.v25'}
+    - {from: 'Google::Ads::GoogleAds::V22\b', to: 'Google::Ads::GoogleAds::V25'}
+    - {from: 'Google\.Ads\.GoogleAds\.V22\b', to: 'Google.Ads.GoogleAds.V25'}
+  library_pins:
+    - {from: '(?i)(\bgoogle-ads\s*(?:==|~=|=)\s*["'']?)2[5-8]\.\d+\.\d+', to: '\g<1>31.4.0', note: 'google-ads 31.4.0 supports v21..v25 and predates the 32.0.0 config-option removals'}
+    - {from: '("google-ads-api"\s*:\s*"[\^~]?)2[0-4]\.\d+\.\d+', to: '\g<1>25.1.0', note: 'Opteo google-ads-api 25.x targets API v25; typed field names may change'}

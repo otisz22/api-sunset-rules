@@ -1,0 +1,73 @@
+id: openai-legacy-2026-10
+engine: openai
+rule_kind: sunset (model shutdown; requests to a removed model ID fail)
+provider: OpenAI API
+deprecated: >-
+  Legacy GPT model snapshots (gpt-3.5-turbo, gpt-4, gpt-4-1106-preview, gpt-4-turbo, gpt-4.1-nano,
+  gpt-4o-2024-05-13, gpt-image-1, o1, o1-pro, o3-mini, o4-mini and their fine-tunes) shut down 2026-10-23;
+  dated GPT-5 / o3 snapshots shut down 2026-12-11
+deadline: "2026-10-23"
+deadline_note: >-
+  "2026-04-22: Legacy GPT model snapshots" shut down October 23, 2026; "2026-06-11: GPT-5 and o3 model
+  deprecations" shut down December 11, 2026 (dated snapshots only; the plain gpt-5 / o3 aliases are not listed)
+deadline_source: https://platform.openai.com/docs/deprecations
+deadline_source_final: https://developers.openai.com/api/docs/deprecations
+verified_on: "2026-10-04"
+verified_note: >-
+  Re-read from the official page on 2026-10-04 (platform.openai.com/docs/deprecations redirects to
+  developers.openai.com/api/docs/deprecations).
+replacement: per model, see `models` (official "Substitute model" / "Recommended replacement" column)
+migration_guide: https://platform.openai.com/docs/deprecations
+target_version: none -- advisory only, no automatic model swap (behaviour and cost differ; a human must choose)
+status: "advisory only: finder + clone verification; no patch generator by design"
+exclude_owners: '^(openai)$'
+sources:
+  - "https://platform.openai.com/docs/deprecations -> https://developers.openai.com/api/docs/deprecations, section \"2026-04-22: Legacy GPT model snapshots\" (shutdown October 23, 2026, incl. fine-tuned versions)"
+  - "same page, section \"2026-06-11: GPT-5 and o3 model deprecations\" (shutdown December 11, 2026)"
+tested_note:
+  - "Tested: the model ID was read as a complete string literal from a non-comment line of the cloned default branch, in a model-selection context (model=, \"model\":, MODEL constant, default model setting)."
+  - "Not tested: nothing was executed and the OpenAI API was not called. An environment variable, a database setting or a UI choice may override the literal at runtime. Azure OpenAI deployments follow Azure's own retirement schedule, and OpenAI-compatible third-party endpoints are not affected by this page."
+
+# Official table, verbatim IDs. `aliases` are the extra IDs listed in the same row.
+models:
+  - {id: gpt-3.5-turbo-0125, aliases: [gpt-3.5-turbo, gpt-3.5-turbo-completions], shutdown: "2026-10-23", replacement: gpt-5.6-terra}
+  - {id: gpt-4-0613, aliases: [gpt-4, gpt-4-0613-completions, gpt-4-completions], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: gpt-4-1106-preview, aliases: [], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: gpt-4-turbo, aliases: [gpt-4-turbo-2024-04-09, gpt-4-turbo-completions], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: gpt-4.1-nano, aliases: [gpt-4.1-nano-2025-04-14], shutdown: "2026-10-23", replacement: gpt-5.6-luna}
+  - {id: gpt-4o-2024-05-13, aliases: [], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: gpt-image-1, aliases: [], shutdown: "2026-10-23", replacement: "gpt-image-2.5-sunburst or gpt-image-2.5-flare"}
+  - {id: o1-2024-12-17, aliases: [o1], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: o1-pro-2025-03-19, aliases: [o1-pro], shutdown: "2026-10-23", replacement: "gpt-5.6-sol (reasoning.mode: pro)"}
+  - {id: o3-mini-2025-01-31, aliases: [o3-mini], shutdown: "2026-10-23", replacement: gpt-5.6-sol}
+  - {id: o4-mini-2025-04-16, aliases: [o4-mini], shutdown: "2026-10-23", replacement: gpt-5.6-terra}
+  # fine-tuned versions (IDs look like ft:<base>:<org>::<id>)
+  - {id: ft-o4-mini-2025-04-16, ft_base: 'o4-mini-2025-04-16', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-terra (re-tune)"}
+  - {id: ft-gpt-3.5-turbo, ft_base: 'gpt-3\.5-turbo(?:-\d{4})?', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-terra (base model)"}
+  - {id: ft-gpt-4, ft_base: 'gpt-4-0613', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-sol (base model)"}
+  - {id: ft-gpt-4.1-nano-2025-04-14, ft_base: 'gpt-4\.1-nano-2025-04-14', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-luna (base model)"}
+  - {id: ft-babbage-002, ft_base: 'babbage-002', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-terra (base model)"}
+  - {id: ft-davinci-002, ft_base: 'davinci-002', aliases: [], shutdown: "2026-10-23", replacement: "gpt-5.6-terra (base model)"}
+  # 2026-06-11 section
+  - {id: gpt-5-2025-08-07, aliases: [], shutdown: "2026-12-11", replacement: gpt-5.6-sol}
+  - {id: gpt-5-mini-2025-08-07, aliases: [], shutdown: "2026-12-11", replacement: gpt-5.6-terra}
+  - {id: gpt-5-nano-2025-08-07, aliases: [], shutdown: "2026-12-11", replacement: gpt-5.6-luna}
+  - {id: gpt-5-pro-2025-10-06, aliases: [], shutdown: "2026-12-11", replacement: "gpt-5.6-sol (reasoning.mode: pro)"}
+  - {id: o3-2025-04-16, aliases: [], shutdown: "2026-12-11", replacement: gpt-5.6-sol}
+  - {id: o3-pro-2025-06-10, aliases: [], shutdown: "2026-12-11", replacement: "gpt-5.6-sol (reasoning.mode: pro)"}
+
+# The engine builds the matching regexes from `models`; these entries only declare file scope.
+patterns:
+  - id: model-literal
+    kind: explicit
+    files: ['*.py', '*.js', '*.jsx', '*.ts', '*.tsx', '*.mjs', '*.cjs', '*.go', '*.rb', '*.php', '*.java', '*.kt', '*.cs', '*.rs', '*.swift', '*.dart', '*.ex', '*.exs', '*.scala']
+    regex: 'MODEL_LITERAL'
+  - id: config-value
+    kind: explicit
+    files: ['*.yaml', '*.yml', '*.json', '*.toml', '*.env', '.env*', '*.ini', '*.cfg', '*.properties']
+    regex: 'MODEL_LITERAL'
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build|out|\.next|coverage|__snapshots__|fixtures?|locales?|i18n|docs?|third[_-]party|vendored|external)/'
+  - '(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|composer\.lock|poetry\.lock|Cargo\.lock)$'
+  - '\.min\.js$'
+  - '\.(md|rst|html|txt)$'

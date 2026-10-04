@@ -1,0 +1,38 @@
+id: npm-trusted-publishing
+engine: npm
+rule_kind: hardening / advisory (no hard deadline that breaks builds)
+provider: npm registry publishing from GitHub Actions
+deprecated: long-lived npm publish tokens (NPM_TOKEN / NODE_AUTH_TOKEN from secrets) in GitHub Actions publish jobs where OIDC trusted publishing could be used
+deadline: "~2027-01 (targeted, not firm)"
+deadline_note: >-
+  npm says 2FA-bypass granular tokens are expected to lose DIRECT publish "around January 2027" (stage-only after that);
+  this is a target, not a committed date. Tokens WITHOUT 2FA bypass, and the trusted-publishing path, are not on any
+  announced removal schedule. Classic tokens were already revoked on 2025-12-09 and write-capable granular tokens are
+  capped at 90 days, so token rotation is an ongoing chore rather than a cliff
+deadline_source: https://github.blog/changelog/2026-07-31-restricting-npm-bypass-2fa-granular-access-tokens/
+sources:
+  - "https://github.blog/changelog/2026-07-08-npm-install-time-security-and-gat-bypass2fa-deprecation/ (npm v12 GA; bypass-2FA GATs lose sensitive account actions, expected early Aug 2026; lose direct publish, expected around Jan 2027)"
+  - "https://github.blog/changelog/2026-07-31-restricting-npm-bypass-2fa-granular-access-tokens/ (account/package-management restrictions in effect; Jan 2027 direct-publish removal described as targeted)"
+  - "https://github.blog/changelog/2026-09-03-multiple-trusted-publishing-configurations-for-npm/ (Sept 2026 expansion: several trusted-publisher configs per package)"
+  - "https://github.blog/changelog/2026-09-18-stage-only-npm-tokens-for-safer-automation/ (Sept 2026: 'Read and write (stage only)' tokens)"
+  - "https://github.blog/changelog/2026-09-30-opt-in-dist-tag-permissions-for-npm-trusted-publishing/ (Sept 2026: dist-tag management via OIDC)"
+  - "https://github.blog/changelog/2025-12-09-npm-classic-tokens-revoked-session-based-auth-and-cli-token-management-now-available/ (classic tokens revoked; write tokens max 90 days)"
+  - "https://github.blog/changelog/2025-07-31-npm-trusted-publishing-with-oidc-is-generally-available/"
+  - "https://docs.npmjs.com/trusted-publishers (requirements: npm CLI >= 11.5.1, Node >= 22.14.0, id-token: write, GitHub-hosted runners only; provenance automatic)"
+target_version: "trusted publishing (OIDC): job permissions id-token: write, no token on the publish step, npm >= 11.5.1"
+replacement: npm trusted publishing (OIDC) from GitHub-hosted runners, or staged publishing with a human 2FA approval
+migration_guide: https://docs.npmjs.com/trusted-publishers
+exclude_owners: '^(npm|github|actions)$'
+tested_note:
+  - "Tested: the workflow YAML in the cloned default branch was parsed; the publish job, its runner type, registry and token wiring were read from the parsed structure; the patched workflow was re-parsed and re-analysed (id-token: write present, no secret npm token on the publish step/job)."
+  - "Not tested: nothing was executed; no trusted publisher was configured on npmjs.com (the patch cannot work until a maintainer does that); actionlint was not available; whether the stored secret is a bypass-2FA token (the only kind with a targeted Jan 2027 change) cannot be seen from the repo."
+
+# The npm engine works on parsed workflow YAML; this pattern only scopes the file walk.
+patterns:
+  - id: publish-with-token
+    kind: explicit
+    files: ['*.yml', '*.yaml']
+    regex: '(?:npm|pnpm)\s+publish'
+
+ignore_paths:
+  - '(^|/)(node_modules|vendor|dist|build|\.git)/'

@@ -1,0 +1,63 @@
+id: github-runner-min-version
+engine: runner
+rule_kind: sunset (hard enforcement, already live)
+provider: GitHub Actions self-hosted runners (github.com / GitHub Enterprise Cloud)
+deprecated: actions/runner versions below 2.329.0 (cannot register or re-register) and runners that skip a release for more than 30 days (jobs stop being queued)
+deadline: "2026-09-29"
+deadline_note: >-
+  full enforcement on GitHub Enterprise Cloud (github.com) began Tuesday 2026-09-29 (moved from 2026-09-25);
+  GHEC with Data Residency since 2026-07-31; GitHub Enterprise Server not affected
+deadline_source: https://github.blog/changelog/2026-09-28-self-hosted-runner-version-enforcement-date-has-moved/
+schedule_source: https://github.blog/changelog/2026-06-12-github-actions-minimum-version-enforcement-timeline-for-self-hosted-runners/
+sources:
+  - "https://github.blog/changelog/2026-09-28-self-hosted-runner-version-enforcement-date-has-moved/ (2026-09-28: full enforcement now begins 2026-09-29; below 2.329.0 cannot register/re-register; runners below the minimum execution version stop running jobs; GHEC only, GHES not impacted)"
+  - "https://github.blog/changelog/2026-06-12-github-actions-minimum-version-enforcement-timeline-for-self-hosted-runners/ (2026-06-12: registration minimum 2.329.0; job execution requires installing each runner release within 30 days; GHEC-DR 2026-07-31)"
+  - "https://github.blog/changelog/2026-03-13-self-hosted-runner-minimum-version-enforcement-paused/ (earlier 2026-03-16 enforcement was paused)"
+  - "https://github.blog/changelog/2026-02-05-github-actions-self-hosted-runner-minimum-version-enforcement-extended/"
+  - "https://docs.github.com/actions/hosting-your-own-runners"
+  - "https://github.com/actions/runner/releases (version list and per-platform SHA-256 values, read via the API at run time)"
+min_register_version: "2.329.0"
+target_version: newest stable actions/runner release at run time (2.337.0 on 2026-10-04)
+replacement: bump the pinned runner version (and its SHA-256) to the newest release, or stop pinning and let the runner auto-update
+migration_guide: https://docs.github.com/actions/hosting-your-own-runners
+exclude_owners: '^(actions|github|actions-runner-controller)$'
+tested_note:
+  - "Tested: the pinned version string was read from a non-comment line of the cloned default branch and compared with the official release list; patched YAML/JSON/shell files were syntax-checked; replaced SHA-256 values are the official per-platform values from the actions/runner release notes; image tags were looked up read-only in Docker Hub / GHCR."
+  - "Not tested: no image was built, no runner was registered, nothing was executed. Whether the runner targets github.com (affected) or GHES (not affected) cannot be seen from the code."
+
+patterns:
+  - id: download-file
+    kind: explicit
+    files: ['*']
+    regex: 'actions-runner-(?:linux|osx|win)-(?:x64|arm64|arm)-v?(?P<ver>2\.\d{3}\.\d+)\.(?:tar\.gz|zip)'
+  - id: download-tag
+    kind: explicit
+    files: ['*']
+    regex: 'actions/runner/releases/download/(?P<ver>v2\.\d{3}\.\d+)/'
+  - id: image-tag
+    kind: explicit
+    files: ['*']
+    regex: '(?P<img>ghcr\.io/actions/actions-runner|summerwind/actions-runner(?:-dind)?(?:-rootless)?|myoung34/github-runner):(?P<ver>v?2\.\d{3}\.\d+)'
+  - id: version-var
+    kind: explicit
+    files: ['Dockerfile*', '*.dockerfile', '*.sh', '*.bash', '*.ps1', '*.yml', '*.yaml', '*.env', '*.tfvars', '*.json', '*.hcl', '*.pkr.hcl', 'Makefile', '*.mk', '*.nix', '*.py', '*.rb', '*.j2']
+    regex: '(?i)\b\w*runner[_-]?version\b["'']?\s*(?:[:=]|\?=|:-)\s*["'']?(?P<ver>v?2\.\d{3}\.\d+)\b'
+  - id: tf-default
+    kind: explicit
+    files: ['*.tf']
+    file_must_match: '(?i)runner_version'
+    regex: '^\s*default\s*=\s*"(?P<ver>v?2\.\d{3}\.\d+)"'
+  - id: helm-tag
+    kind: explicit
+    files: ['values*.yaml', 'values*.yml']
+    file_must_match: '(?i)actions-runner|github-runner'
+    regex: '^\s*tag:\s*["'']?(?P<ver>v?2\.\d{3}\.\d+)'
+
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build|\.git)/'
+  - '(^|/)(docs?|documentation)/'
+  - '(?i)(^|/)(tests?|__tests__|testdata|test-data|fixtures?|spec)/'            # test fixtures are not deployed runners
+  - '(?i)(_test\.|\.test\.|\.spec\.|\.tftest\.hcl$|_tests?\.rs$)'
+  - '(?i)(^|/)(deprecated|archived?|old|legacy|attic)/'                       # explicitly retired configs
+  - '(?i)(^|/)(CHANGELOG|RELEASE|HISTORY)[^/]*$'
+  - '\.(md|rst|html|txt|lock)$'

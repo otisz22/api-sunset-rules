@@ -1,0 +1,44 @@
+id: apple-private-relay-domain
+engine: apple_relay
+rule_kind: domain change (additive; old addresses keep working)
+provider: Apple Sign in with Apple (private email relay service)
+deprecated: >-
+  new Sign in with Apple relay addresses are issued on private.icloud.com instead of privaterelay.appleid.com;
+  code that recognises relay addresses only by the old domain (regex, endsWith/equality checks, domain allow/deny
+  lists, CRM routing) silently mis-handles every newly issued address
+deadline: "later in 2026 (no exact date published)"
+deadline_note: >-
+  Apple (2026-08-24 update, superseding the 2026-06-15 announcement): "Starting later this year, new Sign in with
+  Apple addresses, previously issued on privaterelay.appleid.com, will be issued on private.icloud.com. Existing
+  addresses on privaterelay.appleid.com will continue to work". iCloud+ Hide My Email stays on icloud.com (the
+  June plan to move it was withdrawn)
+deadline_source: https://developer.apple.com/news/?id=1ptvdtcm
+sources:
+  - "https://developer.apple.com/news/?id=1ptvdtcm (2026-08-24, 'Update: New domain for Sign in with Apple': new SIWA addresses issued on private.icloud.com starting later this year; existing privaterelay.appleid.com addresses keep forwarding; Hide My Email stays on icloud.com; developers must make account systems, email validation logic and allowlists accept private.icloud.com in addition to privaterelay.appleid.com)"
+  - "https://developer.apple.com/news/?id=sus6t6ab (2026-06-15, original announcement, marked outdated by Apple: planned a shared private.icloud.com domain for SIWA and Hide My Email 'later this summer'; also asked email service providers to update domain-based filtering, suppression lists and routing rules that enumerate relay domains)"
+  - "https://developer.apple.com/documentation/signinwithapple/communicating-using-the-private-email-relay-service (relay addresses end in @private.icloud.com, @privaterelay.appleid.com or @icloud.com; to send mail you must register outbound emails/domains and authenticate with SPF; 100 emails per relay address per day)"
+  - "https://developer.apple.com/sign-in-with-apple/"
+target_version: accept private.icloud.com alongside privaterelay.appleid.com (old domain is kept, never removed)
+replacement: >-
+  add private.icloud.com wherever privaterelay.appleid.com is enumerated or matched; no change to outbound
+  relay registration or SPF is announced (registration is per sending domain/address, not per relay domain)
+migration_guide: https://developer.apple.com/news/?id=1ptvdtcm
+new_domain: private.icloud.com
+old_domain: privaterelay.appleid.com
+exclude_owners: '^(apple|apple-oss-distributions|swiftlang)$'
+tested_note:
+  - "Tested: every hit is a non-comment line of the cloned default branch that names privaterelay.appleid.com in a file that does NOT already mention private.icloud.com; constants were followed to the lines that compare against them; patched files were syntax-checked where a checker exists (Python, JSON, YAML, JS, TS via Node type stripping, Ruby, Go via gofmt, Swift via swiftc -parse), differentially (a file that did not parse before patching is reported as unchecked); every patch keeps each original privaterelay.appleid.com occurrence."
+  - "Not tested: no project was built and no test suite was run. Whether a matched list is an allowlist, a blocklist or a CRM/analytics bucket is read from names and context only. Data stored in databases (e.g. rows that enumerate relay domains) and third-party ESP settings are invisible to a code scan."
+
+patterns:
+  - id: relay-domain
+    kind: explicit
+    files: ['*']
+    regex: 'privaterelay(?:\\{1,4})?\.appleid(?:\\{1,4})?\.com'
+
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build|out|\.next|\.nuxt|coverage|Pods|\.git)/'
+  - '(?i)(^|/)(docs?|documentation|website|blog|posts?|content|i18n|locales?|translations?)/'
+  - '(?i)(^|/)(CHANGELOG|RELEASE|HISTORY|LICENSE|README)[^/]*$'
+  - '(?i)\.(md|mdx|rst|html?|adoc|ipynb|lock|map|svg|po|pot|xliff|xlf|strings|arb|csv|log)$'
+  - '(?i)\.min\.(js|css)$|-lock\.(json|yaml)$|(^|/)package-lock\.json$'

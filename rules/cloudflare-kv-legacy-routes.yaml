@@ -1,0 +1,39 @@
+id: cloudflare-kv-legacy-routes
+engine: cf_kv
+rule_kind: sunset (REST route removal; requests to the legacy path stop working)
+provider: Cloudflare Workers KV REST API
+deprecated: legacy Workers KV routes under /accounts/{account_id}/workers/namespaces/* (list/create/get/rename/delete namespace, list keys, read metadata, read/write/delete values)
+deadline: "2026-10-15"
+deadline_note: >-
+  "deprecated as of July 15, 2026, and will stop working on October 15, 2026" (changelog); the API deprecations page
+  lists "End of life date: October 15, 2026" and "After October 15, 2026, requests to the legacy
+  /accounts/{account_id}/workers/namespaces/* routes will no longer be supported"
+deadline_source: https://developers.cloudflare.com/changelog/post/2026-07-15-kv-legacy-namespace-routes-deprecation/
+verified_on: "2026-10-04"
+verified_note: >-
+  Both official pages fetched 2026-10-04 (HTTP 200). All three owner claims hold: date 2026-10-15, affected
+  /accounts/{account_id}/workers/namespaces/*, replacement /accounts/{account_id}/storage/kv/namespaces/* with identical
+  request parameters and response payloads ("a direct URL path substitution").
+sources:
+  - "https://developers.cloudflare.com/changelog/post/2026-07-15-kv-legacy-namespace-routes-deprecation/ (July 15, 2026: 'Deprecate legacy Workers KV namespace API routes'; stop working October 15, 2026; route-by-route mapping)"
+  - "https://developers.cloudflare.com/fundamentals/api/reference/deprecations/ (entry 2026-07-15 'Workers KV: Legacy Namespace Routes', End of life date: October 15, 2026)"
+replacement: "/accounts/{account_id}/storage/kv/namespaces/* (same parameters, same payloads)"
+migration_guide: https://developers.cloudflare.com/changelog/post/2026-07-15-kv-legacy-namespace-routes-deprecation/
+target_version: "path rewrite workers/namespaces -> storage/kv/namespaces (official 1:1 mapping)"
+exclude_owners: '^(cloudflare|cloudflare-mining)$'
+tested_note:
+  - "Tested: the legacy path was found on a non-comment line of the cloned default branch; the rewritten file was re-parsed with the language's parser where one was available (see Syntax check column)."
+  - "Not tested: nothing was executed and the Cloudflare API was not called; API tokens, account IDs and runtime-built URLs were not exercised. Bulk routes (/bulk) are not part of the deprecation and were not touched."
+
+# The engine applies its own regex; this only scopes which files are read.
+patterns:
+  - id: legacy-kv-route
+    kind: explicit
+    files: ['*.py', '*.js', '*.jsx', '*.ts', '*.tsx', '*.mjs', '*.cjs', '*.mts', '*.go', '*.rb', '*.php', '*.java', '*.kt', '*.cs', '*.rs', '*.swift', '*.dart', '*.ex', '*.exs', '*.scala', '*.lua', '*.pl', '*.sh', '*.bash', '*.yaml', '*.yml', '*.json', '*.toml', '*.env', '.env*', '*.http', '*.ps1']
+    regex: 'workers/namespaces'
+ignore_paths:
+  - '(^|/)(node_modules|site-packages|vendor|venv|\.venv|dist|build|out|\.next|coverage|__snapshots__|docs?|third[_-]party|vendored|external)/'
+  - '(^|/)(package-lock\.json|pnpm-lock\.yaml|yarn\.lock|composer\.lock|poetry\.lock|Cargo\.lock)$'
+  - '\.min\.js$'
+  - '(?i)openapi|swagger'
+  - '\.(md|rst|html|txt)$'
